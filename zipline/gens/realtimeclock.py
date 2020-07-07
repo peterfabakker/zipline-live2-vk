@@ -23,6 +23,8 @@ from zipline.gens.sim_engine import (
     BEFORE_TRADING_START_BAR
 )
 
+MARKETS_CLOSED = 5
+
 log = Logger('Realtime Clock')
 
 
@@ -101,6 +103,19 @@ class RealtimeClock(object):
                          self.execution_opens[index].tz_localize('UTC')):
                     # sleep anywhere between yesterday's close and today's open
                     sleep(1)
+
+                    # self._last_emit = server_time
+                    # yield server_time, MARKETS_CLOSED
+
+                    if (self._last_emit is None or
+                            server_time - self._last_emit >=
+                            pd.Timedelta('1 minute')):
+                        self._last_emit = server_time
+                        yield server_time, MARKETS_CLOSED
+                        # if self.minute_emission:
+                        #     yield server_time, MINUTE_END
+                    else:
+                        sleep(1)
                 elif (self.execution_opens[index].tz_localize('UTC') <= server_time <
                       self.execution_closes[index].tz_localize('UTC')):
                     if (self._last_emit is None or

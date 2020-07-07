@@ -391,24 +391,39 @@ class TWSConnection(EClientSocket, EWrapper):
 
     def commissionReport(self, commission_report):
         exec_id = commission_report.m_execId
-        order_id = self._execution_to_order_id[commission_report.m_execId]
-        self.commissions[order_id][exec_id] = commission_report
 
-        log.debug(
-            "Order-{order_id} report: "
-            "realized_pnl: ${realized_pnl} "
-            "commission: ${commission} yield: {yield_} "
-            "exec_id: {exec_id}".format(
-                order_id=order_id,
-                exec_id=commission_report.m_execId,
-                realized_pnl=commission_report.m_realizedPNL
-                if commission_report.m_realizedPNL != sys.float_info.max
-                else 0,
-                commission=commission_report.m_commission,
-                yield_=commission_report.m_yield
-                if commission_report.m_yield != sys.float_info.max
-                else 0)
-        )
+        # we need this check for the case when IB is sending report for the
+        # order which was placed by another session out of market hours
+        # in this case current session does not have info on the exec_id
+        if commission_report.m_execId in self._execution_to_order_id:
+            # we do have info on the report within session
+            order_id = self._execution_to_order_id[commission_report.m_execId]
+            self.commissions[order_id][exec_id] = commission_report
+
+            log.debug(
+                "Order-{order_id} report: "
+                "realized_pnl: ${realized_pnl} "
+                "commission: ${commission} yield: {yield_} "
+                "exec_id: {exec_id}".format(
+                    order_id=order_id,
+                    exec_id=commission_report.m_execId,
+                    realized_pnl=commission_report.m_realizedPNL
+                    if commission_report.m_realizedPNL != sys.float_info.max
+                    else 0,
+                    commission=commission_report.m_commission,
+                    yield_=commission_report.m_yield
+                    if commission_report.m_yield != sys.float_info.max
+                    else 0)
+            )
+        else:
+            # we do have info on the report within session
+            log.debug(
+                "Commission report is sent by TWS however exec_id is not found within current session"
+                "exec_id: {exec_id}".format(
+                    exec_id=commission_report.m_execId,
+                )
+            )
+            pass
 
     def connectionClosed(self):
         self.unrecoverable_error = True

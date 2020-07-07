@@ -28,6 +28,8 @@ from zipline.gens.sim_engine import (
     BEFORE_TRADING_START_BAR
 )
 
+MARKETS_CLOSED = 5
+
 log = Logger('Trade Simulation')
 
 
@@ -227,8 +229,12 @@ class AlgorithmSimulator(object):
                         algo,
                         metrics_tracker,
                     )
-
                     yield minute_msg
+                elif action == MARKETS_CLOSED:
+                    log.info("Markets are closed!")
+                    for capital_change_packet in every_bar(dt):
+                        yield capital_change_packet
+                    pass
 
             risk_message = metrics_tracker.handle_simulation_end(
                 self.data_portal,

@@ -3,6 +3,10 @@ from . import quandl  # noqa
 from . import csvdir  # noqa
 from . import sharadar  # noqa
 
+# added by Vyacheslav Klyuchnikov 02-07-2020
+from . import sharadar_ext  # noqa
+from . import sharadar_funds  # noqa
+
 from .core import (
     UnknownBundle,
     bundles,
