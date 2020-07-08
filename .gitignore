@@ -92,3 +92,4 @@ TAGS
 .ipynb_checkpoints/
 
 .gdb_history
+*.pyd

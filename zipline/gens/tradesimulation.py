@@ -25,13 +25,11 @@ from zipline.gens.sim_engine import (
     SESSION_START,
     SESSION_END,
     MINUTE_END,
-    BEFORE_TRADING_START_BAR
+    BEFORE_TRADING_START_BAR,
+    MARKETS_CLOSED,
 )
 
-MARKETS_CLOSED = 5
-
 log = Logger('Trade Simulation')
-
 
 class AlgorithmSimulator(object):
 
@@ -204,6 +202,7 @@ class AlgorithmSimulator(object):
 
             for dt, action in self.clock:
                 if action == BAR:
+                    self.algo.markets_open = True
                     for capital_change_packet in every_bar(dt):
                         yield capital_change_packet
                 elif action == SESSION_START:
@@ -231,7 +230,8 @@ class AlgorithmSimulator(object):
                     )
                     yield minute_msg
                 elif action == MARKETS_CLOSED:
-                    log.info("Markets are closed!")
+                    #log.info("Markets are closed!")
+                    self.algo.markets_open = False
                     for capital_change_packet in every_bar(dt):
                         yield capital_change_packet
                     pass

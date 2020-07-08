@@ -20,10 +20,9 @@ from zipline.gens.sim_engine import (
     SESSION_START,
     SESSION_END,
     MINUTE_END,
-    BEFORE_TRADING_START_BAR
+    BEFORE_TRADING_START_BAR,
+    MARKETS_CLOSED
 )
-
-MARKETS_CLOSED = 5
 
 log = Logger('Realtime Clock')
 

@@ -28,6 +28,7 @@ cpdef enum:
     SESSION_END = 2
     MINUTE_END = 3
     BEFORE_TRADING_START_BAR = 4
+    MARKETS_CLOSED = 5
 
 cdef class MinuteSimulationClock:
     cdef bool minute_emission

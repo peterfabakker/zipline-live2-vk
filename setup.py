@@ -285,8 +285,8 @@ conditional_arguments = {
 }
 
 setup(
-    name='zipline-live2',
-    url="https://github.com/shlomikushchi/zipline-live2",
+    name='zipline-live2-vk',
+    url="https://github.com/vk643/zipline-live2-vk",
     version=versioneer.get_version(),
     cmdclass=LazyBuildExtCommandClass(versioneer.get_cmdclass()),
     description='A backtester and live trader for financial algorithms.',
@@ -297,7 +297,7 @@ setup(
     },
     author='zipline-live community',
     author_email='',
-    maintainer='Shlomi Kushchi',
+    maintainer='Vyacheslav Klyuchnikov',
     packages=find_packages(include=['zipline', 'zipline.*']),
     ext_modules=ext_modules,
     include_package_data=True,
