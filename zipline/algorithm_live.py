@@ -14,6 +14,7 @@ import os.path
 from datetime import datetime, timedelta
 import logbook
 import pandas as pd
+import numpy as np
 import pytz
 from dateutil.relativedelta import relativedelta
 
@@ -249,11 +250,20 @@ class LiveTradingAlgorithm(TradingAlgorithm):
         #
         # Hence, we are increasing the asset's end_date by 10 years.
 
+        # VK: it is not clear why 10 years is used - we can easily include
+        # delisted assets into pipeline by doing that. Thus extending lifetimes
+        # only until current live trading date.
+
         asset = super(self.__class__, self).symbol(symbol_str)
         tradeable_asset = asset.to_dict()
-        end_date = pd.Timestamp((datetime.utcnow() + relativedelta(years=10)).date()).replace(tzinfo=pytz.UTC)
-        tradeable_asset['end_date'] = end_date
-        tradeable_asset['auto_close_date'] = end_date
+        live_today = pd.Timestamp(datetime.utcnow().date()).replace(tzinfo=pytz.UTC)
+        if tradeable_asset['end_date'] + pd.offsets.BDay(1) >= live_today:
+            tradeable_asset['end_date'] = live_today
+            tradeable_asset['auto_close_date'] = live_today
+
+        # end_date = pd.Timestamp((datetime.utcnow() + relativedelta(years=10)).date()).replace(tzinfo=pytz.UTC)
+        # tradeable_asset['end_date'] = end_date
+        # tradeable_asset['auto_close_date'] = end_date
         log.info('Extended lifetime of asset {} to {}'.format(symbol_str,
                                                               tradeable_asset['end_date']))
         return asset.from_dict(tradeable_asset)
@@ -302,6 +312,9 @@ class LiveTradingAlgorithm(TradingAlgorithm):
 
         log.info('today in _pipeline_output : {}'.format(prev_session))
 
+        live_today = pd.Timestamp(datetime.utcnow().date()).replace(tzinfo=pytz.UTC)
+        lifetimes_extended = False
+
         try:
             data = self._pipeline_cache.get(name, prev_session)
         except KeyError:
@@ -309,7 +322,25 @@ class LiveTradingAlgorithm(TradingAlgorithm):
             data, valid_until = self.run_pipeline(
                 pipeline, prev_session, next(chunks),
             )
+
+            # If live trading then shifting the end date to today.
+            # Doing that for assets with the up to date end_date only.
+            dates_kept = np.array(data.index.get_level_values(0))
+            assets_kept = np.array(data.index.get_level_values(1))
+            for i, asset in enumerate(assets_kept):
+                if asset.end_date + pd.offsets.BDay(1) >= live_today:
+                    lifetimes_extended = True
+                    asset_dict = asset.to_dict()
+                    asset_dict['end_date'] = live_today
+                    asset_dict['auto_close_date'] = live_today
+                    assets_kept[i] = asset.from_dict(asset_dict)
+            index = pd.MultiIndex.from_arrays([dates_kept, assets_kept])
+            data.index = index
+
             self._pipeline_cache.set(name, data, valid_until)
+
+        if lifetimes_extended:
+            log.info('Extended lifetime of the pipeline assets to {}'.format(live_today))
 
         # Now that we have a cached result, try to return the data for today.
         try:

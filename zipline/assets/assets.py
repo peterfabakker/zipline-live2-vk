@@ -1477,19 +1477,7 @@ class AssetFinder(object):
                 dtype='f8',  # use doubles so we get NaNs
             )
         else:
-            # buf = np.array([], dtype='f8')
-
-            # just turning off where filters
-            buf = np.array(
-                tuple(
-                    sa.select((
-                        equities_cols.sid,
-                        equities_cols.start_date,
-                        equities_cols.end_date,
-                    )).execute(),
-                ),
-                dtype='f8',  # use doubles so we get NaNs
-            )
+            buf = np.array([], dtype='f8')
         lifetimes = np.recarray(
             buf=buf,
             shape=(len(buf),),
