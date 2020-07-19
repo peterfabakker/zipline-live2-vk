@@ -289,7 +289,7 @@ setup(
     url="https://github.com/vk643/zipline-live2-vk",
     version=versioneer.get_version(),
     cmdclass=LazyBuildExtCommandClass(versioneer.get_cmdclass()),
-    description='A backtester and live trader for financial algorithms.',
+    description='A backtester and live trader for financial algorithms. [VK branch]',
     entry_points={
         'console_scripts': [
             'zipline = zipline.__main__:main',
