@@ -264,9 +264,11 @@ class LiveTradingAlgorithm(TradingAlgorithm):
         # end_date = pd.Timestamp((datetime.utcnow() + relativedelta(years=10)).date()).replace(tzinfo=pytz.UTC)
         # tradeable_asset['end_date'] = end_date
         # tradeable_asset['auto_close_date'] = end_date
-        log.info('Extended lifetime of asset {} to {}'.format(symbol_str,
-                                                              tradeable_asset['end_date']))
+            log.info('Extended lifetime of asset {} to {}'.format(symbol_str,
+                                                                  tradeable_asset['end_date']))
+            # asset = asset.from_dict(tradeable_asset)
         return asset.from_dict(tradeable_asset)
+#        return asset
 
     def run(self, *args, **kwargs):
         daily_stats = super(self.__class__, self).run(*args, **kwargs)
