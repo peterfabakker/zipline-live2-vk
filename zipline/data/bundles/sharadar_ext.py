@@ -312,8 +312,6 @@ def download_without_progress(url):
     return BytesIO(resp.content)
 
 def load_exclusions():
-    from zipline.utils.paths import zipline_root
-    import pickle
     EXCLUSIONS_FILE = zipline_root() + '/data/exclusions.pkl'
     try:
         with open(EXCLUSIONS_FILE, 'rb') as f:
