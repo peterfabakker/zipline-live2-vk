@@ -17,6 +17,8 @@ from trading_calendars import register_calendar_alias
 
 from zipline.data.bundles import core as bundles  # looking in .zipline/extensions.py
 import numpy as np
+from zipline.utils.paths import zipline_root
+import pickle
 
 # Code from:
 # Quantopian Zipline Issues:
@@ -41,6 +43,8 @@ QUANDL_FUNDS_DATA_URL = (
 QUANDL_URLS = [dict(url=QUANDL_EQUITIES_DATA_URL, desc='Equities'),
                dict(url=QUANDL_FUNDS_DATA_URL, desc='Funds'),
                ]
+
+EXCLUSIONS_FILE = zipline_root() + '/data/exclusions.pkl'
 
 @bundles.register('sharadar-ext')
 def sharadar_prices_bundle(environ,
@@ -176,8 +180,11 @@ def load_data_table(file,
         inplace=True,
         copy=False,
     )
+    initial_size = data_table.size
+    data_table = data_table[~data_table.symbol.isin(load_exclusions())]
+    if show_progress:
+        log.info(f"Excluding {initial_size - data_table.size} lines based on exclusions.pkl")
     return data_table
-
 
 def fetch_data_table(api_key,
                      show_progress,
@@ -304,5 +311,15 @@ def download_without_progress(url):
     resp.raise_for_status()
     return BytesIO(resp.content)
 
+def load_exclusions():
+    from zipline.utils.paths import zipline_root
+    import pickle
+    EXCLUSIONS_FILE = zipline_root() + '/data/exclusions.pkl'
+    try:
+        with open(EXCLUSIONS_FILE, 'rb') as f:
+            exclusions = pickle.load(f)
+    except:
+        exclusions = []
+    return exclusions
 
 register_calendar_alias("sharadar-ext", "NYSE")

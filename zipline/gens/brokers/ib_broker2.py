@@ -81,6 +81,7 @@ class IBBroker(IB):
         self.orderStatusEvent += self.orderStatus
         self.execDetailsEvent += self.execDetails
         self.commissionReportEvent += self.commissionReport
+        self.errorEvent += self.error
 
         try:
             self.connect(self.host, self.port, self.client_id)
@@ -99,6 +100,11 @@ class IBBroker(IB):
                            else account_id)
 
         self.reqMarketDataType(marketDataType)
+
+    def error(self, reqId, errorCode, errorString, contract):
+        # this is just the error-handler
+        pass
+        # log.info(f'{reqId}: {errorCode}: {errorString}' + '' if not contract else f'{contract}')
 
     def execDetails(self, trade, fill):
         order_id, exec_id = fill.execution.orderId, fill.execution.execId
@@ -213,7 +219,7 @@ class IBBroker(IB):
         contract.exchange = symbol_to_exchange[symbol]
         contract.currency = self.currency
         ticker = self.reqMktData(contract, tick_list)
-        for i in range (0, max_wait_cycles):
+        for i in range(0, max_wait_cycles):
             self.sleep(wait_step)
             if ticker.time:
                 break
